@@ -15,14 +15,14 @@ from typing import *
 os.environ["NVIDIA_API_KEY"] = ""
 
 
-def better_embedding(documents: List[Document]) -> List[Document]:
+def better_embedding(documents):
     # 优化嵌入
     prompt = PromptTemplate(
         input_variables=["text"],
         template="请作为一名医生总结以下内容，提取症状，优化向量检索效果：\n{text}",
     )
     chain = LLMChain(llm=llm, prompt=prompt)
-    summarized_docs: List[Document] = []
+    summarized_docs= []
     for doc in documents:
         summary = chain.run(text=doc.page_content)
         summarized_docs.append(
