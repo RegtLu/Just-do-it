@@ -4,9 +4,25 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain.schema.runnable import RunnableLambda
 from langchain.schema.runnable.passthrough import RunnableAssign
 from langchain_core.runnables import RunnableBranch
+from operator import itemgetter
+from langchain.vectorstores import FAISS
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain.chains import ConversationChain
 from langchain.memory import ConversationBufferMemory
+from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
+from langchain.chains import ConversationChain
+from langchain.memory import ConversationBufferMemory
+from langchain_nvidia_ai_endpoints import ChatNVIDIA
+from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_text_splitters import CharacterTextSplitter
+from langchain.prompts import PromptTemplate
+from langchain.prompts import PromptTemplate
+from langchain_core.vectorstores import VectorStoreRetriever
+from langchain.chains import LLMChain
+from langchain.schema import Document
 import gradio as gr
 import os
 from typing import *
@@ -52,17 +68,20 @@ def query_rag(query: str) -> Tuple[str, List[str]]:
     docs = get_documents(query)
     prompt = PromptTemplate(
         input_variables=["context", "query"],
-        template="以下是相关资料：\n{context}\n请作为一名医生根据这些信息回答问题：\n{query}",
+        template="以下是相关资料：\n{context}\n请作为一名医生根据这些信息永中文回答问题：\n{query}",
     )
     chain = LLMChain(llm=llm, prompt=prompt)
     final_answer = chain.run(context="\n".join(docs), query=query)
     return final_answer, docs
 
 
+
 llm = ChatNVIDIA(model="ai-llama3-70b")
 embeddings = NVIDIAEmbeddings(model="baai/bge-m3")
+
 if os.path.exists("faiss_index"):
-    vectorstore = FAISS.load_local("faiss_index", embeddings)
+    vectorstore = FAISS.load_local("faiss_index", embeddings,allow_dangerous_deserialization=True)
+
 else:
     import build
     splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)

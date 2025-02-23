@@ -15,21 +15,20 @@ def get_content(file_path:str)->str:
         f.write(element.text)
     j = json.load(open('0.json','r',encoding='utf-8'))
 
-    k=json.loads(j['props']['pageProps']['componentProps']['ebce85a2-47e5-45dd-97f6-dd2d9e347dbf']['props']['datasource']['datasource']['ViewModel']['jsonValue']['value'])
-
+    k=j['props']['pageProps']['componentProps']['ebce85a2-47e5-45dd-97f6-dd2d9e347dbf']['props']['datasource']['datasource']['ViewModel']['jsonValue']['value']
     def get_texts(node):
-        global count
+        count=0
         texts = []
         if isinstance(node, dict):
             if 't' in node and node.get('t') == "Text/Title":
                 for key, value in node.items():
                     texts.extend(get_texts(value))
                 texts.append('\n')
-                return texts  # 返回列表，确保类型一致
+                return texts
             if "t" in node and node.get('t') == "Text/AltTitle":
                 count += 1
                 if count % 2 == 0:
-                    return []  # 返回空列表而不是空字符串
+                    return []
                 texts.append('\n\n')
             if (node.get("$type") == "MM.Feature.Vasont.Presentation.Text.String.StringViewModel, MM.Feature.Vasont"
                 and "it" in node):
@@ -43,15 +42,14 @@ def get_content(file_path:str)->str:
             for item in node:
                 texts.extend(get_texts(item))
         return texts
-    count = 0
     texts = get_texts(k)
     pat=re.compile(r"\n\n\n")
     text=re.subn(pat,"\n\n",''.join(texts))
     return text[0]
 
 
-def build() -> Document:
-    root_dir = './MSD'
+def build():
+    root_dir = './MSD2'
     documents=[]
     for dirpath, dirnames, filenames in os.walk(root_dir):
         for filename in filenames:
@@ -64,5 +62,6 @@ def build() -> Document:
                     )
                     documents.append(document)
                 except Exception as e:
+                    print(e)
                     continue
     return documents
